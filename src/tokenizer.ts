@@ -81,6 +81,7 @@ function dataState(scanner: Scanner, emit: Emitter) {
     } else if (chr === "?") {
       bogusCommentState(scanner, emit);
     } else {
+      scanner.unread();
       emit(chevron);
     }
     // <<< 12.2.4.6 Tag open state ---------------------------------------------
@@ -284,7 +285,9 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     scanner.skip(2);
     const data = scanner.readUntil(endOfComment);
     emit(createDataToken(TokenType.COMMENT, data));
-    scanner.index = endOfComment.lastIndex;
+    // cannot skip variable length match in one command
+    scanner.readUntil(">");
+    scanner.skip(1);
   } else if (scanner.startsWith("[CDATA[")) {
     scanner.skip(7);
     const data = scanner.readUntil("]]>");

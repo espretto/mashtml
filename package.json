@@ -32,6 +32,12 @@
       "@babel/plugin-proposal-optional-chaining"
     ]
   },
+  "jest": {
+    "transform": {
+      "\\.[jt]sx?$": ["babel-jest"],
+      "\\.test$": ["./jsonTransformer.js"]
+    }
+  },
   "browserslist": {
     "production": [
       "last 3 chrome version",
@@ -43,7 +49,7 @@
     "npm": ">=6.9.0"
   },
   "scripts": {
-    "test": "echo not yet implemented; exit 1",
+    "test": "jest",
     "clean": "rm -rf ./dist",
     "build": "tsc --build ./tsconfig.json",
     "lint:types": "tsc --noEmit ./src/**/*"

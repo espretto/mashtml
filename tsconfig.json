@@ -12,5 +12,5 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["./src"]
+  "include": ["./src", "./html5lib-tests/"]
 }
