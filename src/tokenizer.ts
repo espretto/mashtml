@@ -1,12 +1,23 @@
 import {
-  Token,
-  createStartTag,
-  createEndTag,
-  TokenType,
-  createDataToken,
-  TagToken,
-} from "./token";
+  bom,
+  cleanAttrName,
+  cleanAttrValue,
+  cleanComment,
+  cleanInputStream,
+  cleanRawText,
+  cleanRCDATA,
+  cleanTagName,
+  cleanText,
+} from "./cleaning";
 import Scanner from "./scanner";
+import {
+  createDataToken,
+  createEndTag,
+  createStartTag,
+  TagToken,
+  Token,
+  TokenType,
+} from "./token";
 
 /** used as test for an ASCII character */
 const isLetter = RegExp.prototype.test.bind(/[a-zA-Z]/);
@@ -19,9 +30,14 @@ const endOfAttrName = /[=\/> \t\n\f]/g;
 
 const endOfAttrValue = /[> \t\n\f]/g;
 
-const endOfComment = /--!?>/g;
+const endOfComment = /--!?>|--?!?$/g;
 
+/** used to flag whether or not to transform numeric html character references */
+const rcDataElements = new Set(["title", "textarea"]);
+
+/** used to switch the parser state to the RCDATA, RAWTEXT or script-data state */
 const rawDataTagNames = new Set([
+  ...rcDataElements,
   "iframe",
   "noembed",
   "noframes",
@@ -29,8 +45,6 @@ const rawDataTagNames = new Set([
   "plaintext",
   "script",
   "style",
-  "textarea",
-  "title",
   "xmp",
 ]);
 
@@ -41,13 +55,18 @@ const rawDataTagNames = new Set([
 type Emitter = (token: Token) => void;
 
 export function tokenize(input: string, emit: Emitter) {
-  dataState(new Scanner(input), emit);
+  // >>> 13.2.3.5 Preprocessing the input stream
+  const scanner = new Scanner(cleanInputStream(input));
+
+  if (scanner.startsWith(bom)) scanner.skip(bom.length);
+
+  dataState(scanner, emit);
 }
 
 function dataState(scanner: Scanner, emit: Emitter) {
   while (!scanner.isEnd()) {
     const text = scanner.readUntil("<");
-    if (text) emit(text);
+    if (text) emit(cleanText(text));
 
     // >>> 12.2.4.6 Tag open state ---------------------------------------------
     const chevron = scanner.read();
@@ -72,13 +91,13 @@ function dataState(scanner: Scanner, emit: Emitter) {
         scanner.unread();
         bogusCommentState(scanner, emit);
       } else {
-        emit(chevron);
-        emit(solidus);
+        emit(chevron + solidus);
       }
       // <<< 12.2.4.7 End tag open state ---------------------------------------
     } else if (chr === "!") {
       markupDeclarationOpenState(scanner, emit);
     } else if (chr === "?") {
+      scanner.unread();
       bogusCommentState(scanner, emit);
     } else {
       scanner.unread();
@@ -90,7 +109,7 @@ function dataState(scanner: Scanner, emit: Emitter) {
 
 function tagNameState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
   // >>> 12.2.4.8 Tag name state -----------------------------------------------
-  tagToken.name = scanner.readUntil(endOfTagName);
+  tagToken.name = cleanTagName(scanner.readUntil(endOfTagName));
   // <<< 12.2.4.8 Tag name state -----------------------------------------------
 
   beforeAttrNameState(scanner, emit, tagToken);
@@ -133,7 +152,7 @@ function beforeAttrNameState(
     // >>> 12.2.4.33 Attribute name state
 
     // retrieve current attribute name, first character (current `chr`) may be [=]
-    const attrName = chr + scanner.readUntil(endOfAttrName);
+    const attrName = cleanAttrName(chr + scanner.readUntil(endOfAttrName));
     const attr = [attrName, ""];
 
     // create and, if new to the start tag token, register the attribute.
@@ -165,13 +184,13 @@ function beforeAttrNameState(
     chr = scanner.read();
     if (chr === "'" || chr === '"') {
       // >>> 12.2.4.36/37 Attribute value (double-/single-quoted) state
-      attr[1] = scanner.readUntil(chr);
+      attr[1] = cleanAttrValue(scanner.readUntil(chr));
       scanner.skip(1);
       // <<< 12.2.4.36/37 Attribute value (double-/single-quoted) state
     } else if (chr) {
       // >>> 12.2.4.38 Attribute value (unquoted) state
       scanner.unread();
-      attr[1] = scanner.readUntil(endOfAttrValue);
+      attr[1] = cleanAttrValue(scanner.readUntil(endOfAttrValue));
       // <<< 12.2.4.38 Attribute value (unquoted) state --------------------------
     }
   }
@@ -217,13 +236,15 @@ function beforeAttrNameState(
  *   12.1.2.6 Restrictions on the contents of raw text and escapable raw text elements
  */
 function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
+  const clean = rcDataElements.has(tagToken.name) ? cleanRCDATA : cleanRawText;
+
   if (tagToken.name === "plaintext") {
     const data = scanner.readUntil(/$/g);
-    if (data) emit(data);
+    if (data) emit(clean(data));
   } else {
     const endTagMatcher = RegExp(`</${tagToken.name}[/> \t\n\f]`, "gi");
     const data = scanner.readUntil(endTagMatcher);
-    if (data) emit(data);
+    if (data) emit(clean(data));
     if (!scanner.isEnd()) {
       beforeAttrNameState(scanner, emit, createEndTag(tagToken.name));
     }
@@ -234,7 +255,7 @@ function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
  * 12.2.4.41 Bogus comment state
  */
 function bogusCommentState(scanner: Scanner, emit: Emitter) {
-  const data = scanner.readUntil(">");
+  const data = cleanComment(scanner.readUntil(">"));
   emit(createDataToken(TokenType.COMMENT, data));
   scanner.skip(1);
 }
@@ -283,7 +304,7 @@ function bogusCommentState(scanner: Scanner, emit: Emitter) {
 function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
   if (scanner.startsWith("--")) {
     scanner.skip(2);
-    const data = scanner.readUntil(endOfComment);
+    const data = cleanComment(scanner.readUntil(endOfComment));
     emit(createDataToken(TokenType.COMMENT, data));
     // cannot skip variable length match in one command
     scanner.readUntil(">");
@@ -299,7 +320,7 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     emit(createDataToken(TokenType.DOCTYPE, data));
     scanner.skip(1);
   } else {
-    const data = scanner.readUntil(">");
+    const data = cleanComment(scanner.readUntil(">"));
     emit(createDataToken(TokenType.COMMENT, data));
     scanner.skip(1);
   }

@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es5",
+    "target": "ES2015",
     "module": "commonjs",
-    "lib": ["ES2015"],
     "moduleResolution": "node",
     "outDir": "dist",
     // use non es modules as default imports
