@@ -71,7 +71,6 @@ const toLowerCaseASCII = createReplacer(/[A-Z]+/g, (chr: string) =>
 const replaceNumericCharacterReferences = createReplacer(
   /&#(\d+|x([\da-f]+));?/gi,
   (_: string, decimal: string, hexadecimal: string) => {
-    toLowerCaseASCII;
     const codePoint = hexadecimal ? parseInt(hexadecimal, 16) : Number(decimal);
 
     if (codePoint in obsoleteCharacterReferences) {

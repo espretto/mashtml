@@ -30,7 +30,7 @@ const endOfAttrName = /[=\/> \t\n\f]/g;
 
 const endOfAttrValue = /[> \t\n\f]/g;
 
-const endOfComment = /--!?>|--?!?$/g;
+const endOfComment = /--!?>/g;
 
 /** used to flag whether or not to transform numeric html character references */
 const rcDataElements = new Set(["title", "textarea"]);
