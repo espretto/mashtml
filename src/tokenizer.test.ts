@@ -1,8 +1,18 @@
 import { tokenize } from "./tokenizer";
+import contentModelFlags from "../html5lib-tests/tokenizer/contentModelFlags.test";
+import domjs from "../html5lib-tests/tokenizer/domjs.test";
+import entities from "../html5lib-tests/tokenizer/entities.test";
+import escapeFlag from "../html5lib-tests/tokenizer/escapeFlag.test";
+import namedEntities from "../html5lib-tests/tokenizer/namedEntities.test";
+import numericEntities from "../html5lib-tests/tokenizer/numericEntities.test";
+import pendingSpecChanges from "../html5lib-tests/tokenizer/pendingSpecChanges.test";
 import test1 from "../html5lib-tests/tokenizer/test1.test";
 import test2 from "../html5lib-tests/tokenizer/test2.test";
 import test3 from "../html5lib-tests/tokenizer/test3.test";
 import test4 from "../html5lib-tests/tokenizer/test4.test";
+import unicodeChars from "../html5lib-tests/tokenizer/unicodeChars.test";
+import unicodeCharsProblematic from "../html5lib-tests/tokenizer/unicodeCharsProblematic.test";
+import xmlViolation from "../html5lib-tests/tokenizer/xmlViolation.test";
 import { Token, TokenType } from "./token";
 import { reNamedCharacterReference } from "./namedCharRefs";
 
@@ -73,10 +83,21 @@ function squashAdjacentCharacterTokens(tokens: TestToken[]) {
 }
 
 const suites: Record<string, typeof test1.tests> = {
+  "html5lib-tests/tokenizer/contentModelFlags.test": contentModelFlags.tests,
+  "html5lib-tests/tokenizer/domjs.test": domjs.tests,
+  "html5lib-tests/tokenizer/entities.test": entities.tests,
+  "html5lib-tests/tokenizer/escapeFlag.test": escapeFlag.tests,
+  "html5lib-tests/tokenizer/namedEntities.test": namedEntities.tests,
+  "html5lib-tests/tokenizer/numericEntities.test": numericEntities.tests,
+  "html5lib-tests/tokenizer/pendingSpecChanges.test": pendingSpecChanges.tests,
   "html5lib-tests/tokenizer/test1.test": test1.tests,
   "html5lib-tests/tokenizer/test2.test": test2.tests,
   "html5lib-tests/tokenizer/test3.test": test3.tests,
   "html5lib-tests/tokenizer/test4.test": test4.tests,
+  "html5lib-tests/tokenizer/unicodeChars.test": unicodeChars.tests,
+  "html5lib-tests/tokenizer/unicodeCharsProblematic.test":
+    unicodeCharsProblematic.tests,
+  "html5lib-tests/tokenizer/xmlViolation.test": xmlViolation.tests,
 };
 
 Object.entries(suites).forEach(([suite, tests]) => {
@@ -89,6 +110,9 @@ Object.entries(suites).forEach(([suite, tests]) => {
         initialStates,
         lastStartTag,
       }) => {
+        /**
+         * skip 13.2.5.73 Named character reference state
+         */
         const testOrSkip =
           initialStates || lastStartTag || reNamedCharacterReference.test(input)
             ? it.skip

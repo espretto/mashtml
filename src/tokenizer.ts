@@ -55,7 +55,7 @@ const rawDataTagNames = new Set([
 type Emitter = (token: Token) => void;
 
 export function tokenize(input: string, emit: Emitter) {
-  // >>> 13.2.3.5 Preprocessing the input stream
+  // 13.2.3.5 Preprocessing the input stream
   const scanner = new Scanner(cleanInputStream(input));
 
   if (scanner.startsWith(bom)) scanner.skip(bom.length);
@@ -64,6 +64,7 @@ export function tokenize(input: string, emit: Emitter) {
 }
 
 function dataState(scanner: Scanner, emit: Emitter) {
+  // 13.2.5.1 Data state
   while (!scanner.isEnd()) {
     const text = scanner.readUntil("<");
     if (text) emit(cleanText(text));

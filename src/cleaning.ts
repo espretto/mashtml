@@ -41,8 +41,8 @@ const obsoleteCharacterReferences: Record<string, string> = {
 const createReplacer = (replacee: RegExp, replacer: any) => (str: string) =>
   str.replace(replacee, replacer);
 
-/** used to remove control-characters */
-const removeControlChars = createReplacer(/[\x01-\x08\x0B\x0E-\x1F]/g, "");
+/** used to detect C0 control characters ignoring ASCII whitespace and NULL */
+const reControlChars = /[\x01-\x08\x0B\x0E-\x1F]/g;
 
 /** used to remove permanent non-chars from unicodes BMP */
 const removeBasicMultilingualNonChars = createReplacer(
@@ -67,7 +67,7 @@ const toLowerCaseASCII = createReplacer(/[A-Z]+/g, (chr: string) =>
   chr.toLowerCase()
 );
 
-/** used to replace numeric character references */
+/** used to replace numeric character references (13.2.5.72 Character reference state) */
 const replaceNumericCharacterReferences = createReplacer(
   /&#(\d+|x([\da-f]+));?/gi,
   (_: string, decimal: string, hexadecimal: string) => {
@@ -102,7 +102,6 @@ export const cleanAttrValue = flow(
 export { cleanAttrValue as cleanRCDATA };
 
 export const cleanInputStream = flow(
-  // removeControlChars,
   removeBasicMultilingualNonChars,
   removeAstralChars,
   normalizeLinebreaks
