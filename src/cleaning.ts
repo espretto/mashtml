@@ -76,7 +76,7 @@ const replaceNumericCharacterReferences = createReplacer(
     if (codePoint in obsoleteCharacterReferences) {
       return obsoleteCharacterReferences[codePoint];
     } else if (
-      (0xd800 <= codePoint && codePoint < 0xdfff) ||
+      (0xd800 <= codePoint && codePoint <= 0xdfff) ||
       codePoint > 0x10ffff
     ) {
       return replacementChar;
