@@ -321,8 +321,6 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     emit(createDataToken(TokenType.DOCTYPE, data));
     scanner.skip(1);
   } else {
-    const data = cleanComment(scanner.readUntil(">"));
-    emit(createDataToken(TokenType.COMMENT, data));
-    scanner.skip(1);
+    bogusCommentState(scanner, emit);
   }
 }
