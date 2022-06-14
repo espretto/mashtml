@@ -48,10 +48,6 @@ const rawDataTagNames = new Set([
   "xmp",
 ]);
 
-/* -----------------------------------------------------------------------------
- * tokenizer states
- */
-
 type Emitter = (token: Token) => void;
 
 export function tokenize(input: string, emit: Emitter) {
@@ -243,7 +239,7 @@ function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
     const data = scanner.readUntil(/$/g);
     if (data) emit(clean(data));
   } else {
-    const endTagMatcher = RegExp(`</${tagToken.name}[/> \t\n\f]`, "gi");
+    const endTagMatcher = new RegExp(`</${tagToken.name}[/> \t\n\f]`, "gi");
     const data = scanner.readUntil(endTagMatcher);
     if (data) emit(clean(data));
     if (!scanner.isEnd()) {
@@ -307,8 +303,7 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     scanner.skip(2);
     const data = cleanComment(scanner.readUntil(endOfComment));
     emit(createDataToken(TokenType.COMMENT, data));
-    // cannot skip variable length match in one command
-    scanner.readUntil(">");
+    scanner.skipUntil(">");
     scanner.skip(1);
   } else if (scanner.startsWith("[CDATA[")) {
     scanner.skip(7);

@@ -22,22 +22,21 @@ export default class Scanner {
     this.index -= 1;
   }
 
-  readUntil(search: string | RegExp) {
-    if (typeof search === "string") {
-      const i = this.input.indexOf(search, this.index);
-      const nextIndex = i < 0 ? this.input.length : i;
-      const chunk = this.input.substring(this.index, nextIndex);
-      this.index = nextIndex;
-      return chunk;
-    }
-    else {
-      if (!search.global) throw new Error("missing global flag on regexp")
-      search.lastIndex = this.index;
-      const match = search.exec(this.input);
-      const nextIndex = match ? match.index : this.input.length;
-      const chunk = this.input.substring(this.index, nextIndex);
-      this.index = nextIndex;
-      return chunk;
+  readUntil(terminator: number | string | RegExp): string {
+    switch (typeof terminator) {
+      case "number": {
+        const chunk = this.input.substring(this.index, terminator);
+        this.index = terminator;
+        return chunk;
+      }
+      case "string": {
+        const index = this.input.indexOf(terminator, this.index);
+        return this.readUntil(index > -1 ? index : this.input.length);
+      }
+      default: {
+        const match = this.search(terminator);
+        return this.readUntil(match ? match.index : this.input.length);
+      }
     }
   }
 
@@ -45,23 +44,28 @@ export default class Scanner {
     this.index += n;
   }
 
-  skipUntil(search: string | RegExp) {
-    if (typeof search === "string") {
-      const i = this.input.indexOf(search, this.index);
-      this.index = i < 0 ? this.input.length : i;
-    }
-    else {
-      if (!search.global) throw new Error("missing global flag on regexp")
-      search.lastIndex = this.index;
-      const match = search.exec(this.input);
+  skipUntil(terminator: string | RegExp) {
+    if (typeof terminator === "string") {
+      const index = this.input.indexOf(terminator, this.index);
+      this.index = index > -1 ? index : this.input.length;
+    } else {
+      const match = this.search(terminator);
       this.index = match ? match.index : this.input.length;
     }
   }
 
-  startsWith(search: string, ignoreCase?: boolean) {
+  search(needle: RegExp) {
+    if (!needle.global) throw new Error("missing global flag on regexp");
+    needle.lastIndex = this.index;
+    return needle.exec(this.input);
+  }
+
+  startsWith(substring: string, ignoreCase?: boolean) {
     return ignoreCase
-      ? this.input.substring(this.index, this.index + search.length).toLowerCase() === search.toLowerCase()
-      : this.input.startsWith(search, this.index);
+      ? this.input
+          .substring(this.index, this.index + substring.length)
+          .toLowerCase() === substring.toLowerCase()
+      : this.input.startsWith(substring, this.index);
   }
 
   isEnd() {
