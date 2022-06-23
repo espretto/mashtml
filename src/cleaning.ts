@@ -48,7 +48,7 @@ const replaceNullChars = createReplacer(/\x00/g, replacementChar);
 const normalizeLinebreaks = createReplacer(/\r\n?/g, "\n");
 
 /** used to lowercase ASCII characters only */
-const toLowerCaseASCII = createReplacer(/[A-Z]+/g, (chr: string) =>
+const toLowerASCII = createReplacer(/[A-Z]+/g, (chr: string) =>
   chr.toLowerCase()
 );
 
@@ -58,16 +58,11 @@ const replaceNumericCharacterReferences = createReplacer(
   (_: string, decimal: string, hexadecimal: string) => {
     const codePoint = hexadecimal ? parseInt(hexadecimal, 16) : Number(decimal);
 
-    if (codePoint in obsoleteCharacterReferences) {
-      return obsoleteCharacterReferences[codePoint];
-    } else if (
-      (0xd800 <= codePoint && codePoint <= 0xdfff) ||
-      codePoint > 0x10ffff
-    ) {
-      return replacementChar;
-    } else {
-      return String.fromCodePoint(codePoint);
-    }
+    return codePoint in obsoleteCharacterReferences
+      ? obsoleteCharacterReferences[codePoint]
+      : (0xd800 <= codePoint && codePoint <= 0xdfff) || 0x10ffff < codePoint
+      ? replacementChar
+      : String.fromCodePoint(codePoint);
   }
 );
 
@@ -75,7 +70,7 @@ export { replaceNullChars as cleanComment, replaceNullChars as cleanRawText };
 
 export { replaceNumericCharacterReferences as cleanText };
 
-export const cleanTagName = flow(replaceNullChars, toLowerCaseASCII);
+export const cleanTagName = flow(replaceNullChars, toLowerASCII);
 
 export { cleanTagName as cleanAttrName };
 
