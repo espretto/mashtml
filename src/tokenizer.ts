@@ -242,9 +242,6 @@ function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
     const endTagMatcher = new RegExp(`</${tagToken.name}[/> \t\n\f]`, "gi");
     const data = scanner.readUntil(endTagMatcher);
     if (data) emit(clean(data));
-    if (!scanner.isEnd()) {
-      beforeAttrNameState(scanner, emit, createEndTag(tagToken.name));
-    }
   }
 }
 
