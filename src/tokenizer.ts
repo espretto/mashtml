@@ -160,20 +160,16 @@ function beforeAttrNameState(
 }
 
 function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
-  let data;
+  const clean = rcDataElements.has(tagToken.name) ? cleanRCDATA : cleanRawText;
 
   if (tagToken.name === "plaintext") {
-    data = scanner.readUntil(/$/g);
+    const data = scanner.readUntil(/$/g);
+    if (data) emit(clean(data));
   } else {
-    const endTagMatcher = new RegExp(`</${tagToken.name}[/> \t\n\f]`, "gi");
-    data = scanner.readUntil(endTagMatcher);
-  }
-
-  if (data) {
-    const clean = rcDataElements.has(tagToken.name)
-      ? cleanRCDATA
-      : cleanRawText;
-    emit(clean(data));
+    const pattern = "</" + tagToken.name + endOfTagName.source;
+    const data = scanner.readUntil(new RegExp(pattern, "gi"));
+    if (data) emit(clean(data));
+    beforeAttrNameState(scanner, emit, createEndTag(tagToken.name));
   }
 }
 
