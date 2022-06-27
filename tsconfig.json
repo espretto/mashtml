@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "target": "ES2015",
+    "strict": false,
+    "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
+    "declaration": true,
     "outDir": "dist",
-    // use non es modules as default imports
     "esModuleInterop": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
   },
-  "include": ["./src", "./html5lib-tests/"]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

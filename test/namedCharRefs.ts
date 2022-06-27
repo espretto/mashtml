@@ -1,3 +1,6 @@
+/**
+ * @see https://html.spec.whatwg.org/#named-character-references
+ */
 const namedCharRefs = [
   "Aacute;",
   "Aacute",
@@ -2233,8 +2236,9 @@ const namedCharRefs = [
 ];
 
 /**
- * incredibly ineffecient, use a trie if this ever becomes a bottleneck
+ * used to test for named character references. this is incredibly ineffecient,
+ * use a trie if this ever becomes a bottleneck.
  */
-export const reNamedCharacterReference = new RegExp(
+export const reNamedCharRef = new RegExp(
   "&(?:" + namedCharRefs.join("|") + ")"
 );

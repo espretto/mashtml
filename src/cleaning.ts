@@ -1,13 +1,11 @@
-import { flow } from "./util";
-
 /** used to be ignored/skipped before tokenizing */
-export const bom = "\xEF\xBB\xBF";
+export const BOM = "\xEF\xBB\xBF";
 
 /** used to replace the NULL character */
 const replacementChar = "\uFFFD";
 
 /** used to map obsolete numeric html character references */
-const obsoleteCharacterReferences: Record<string, string> = {
+const obsoleteCharRefs: Record<string, string> = {
   "0": replacementChar,
   "128": "\u20AC", // EURO SIGN (€)
   "130": "\u201A", // SINGLE LOW-9 QUOTATION MARK (‚)
@@ -38,6 +36,7 @@ const obsoleteCharacterReferences: Record<string, string> = {
   "159": "\u0178", // LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ)
 };
 
+/** used to curry String.prototype.replace */
 const createReplacer = (replacee: RegExp, replacer: any) => (str: string) =>
   str.replace(replacee, replacer);
 
@@ -53,13 +52,13 @@ const toLowerASCII = createReplacer(/[A-Z]+/g, (chr: string) =>
 );
 
 /** used to replace numeric character references (13.2.5.72 Character reference state) */
-const replaceNumericCharacterReferences = createReplacer(
+const replaceNumCharRefs = createReplacer(
   /&#(\d+|x([\da-f]+));?/gi,
   (_: string, decimal: string, hexadecimal: string) => {
     const codePoint = hexadecimal ? parseInt(hexadecimal, 16) : Number(decimal);
 
-    return codePoint in obsoleteCharacterReferences
-      ? obsoleteCharacterReferences[codePoint]
+    return codePoint in obsoleteCharRefs
+      ? obsoleteCharRefs[codePoint]
       : (0xd800 <= codePoint && codePoint <= 0xdfff) || 0x10ffff < codePoint
       ? replacementChar
       : String.fromCodePoint(codePoint);
@@ -68,16 +67,15 @@ const replaceNumericCharacterReferences = createReplacer(
 
 export { replaceNullChars as cleanComment, replaceNullChars as cleanRawText };
 
-export { replaceNumericCharacterReferences as cleanText };
+export { replaceNumCharRefs as cleanText };
 
-export const cleanTagName = flow(replaceNullChars, toLowerASCII);
+export const cleanTagName = (input: string) =>
+  toLowerASCII(replaceNullChars(input));
 
 export { cleanTagName as cleanAttrName };
 
-export const cleanAttrValue = flow(
-  replaceNullChars,
-  replaceNumericCharacterReferences
-);
+export const cleanAttrValue = (input: string) =>
+  replaceNumCharRefs(replaceNullChars(input));
 
 export { cleanAttrValue as cleanRCDATA };
 

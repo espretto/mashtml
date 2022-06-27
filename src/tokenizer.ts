@@ -1,5 +1,5 @@
 import {
-  bom,
+  BOM,
   cleanAttrName,
   cleanAttrValue,
   cleanComment,
@@ -34,7 +34,6 @@ const endOfComment = /--!?>/g;
 const rcDataElements = new Set(["title", "textarea"]);
 
 const rawDataTagNames = new Set([
-  ...rcDataElements,
   "iframe",
   "noembed",
   "noframes",
@@ -45,11 +44,11 @@ const rawDataTagNames = new Set([
   "xmp",
 ]);
 
-type Emitter = (token: Token) => void;
+export type Emitter = (token: Token) => void;
 
 export function tokenize(input: string, emit: Emitter) {
   const scanner = new Scanner(cleanInputStream(input));
-  if (scanner.startsWith(bom)) scanner.skip(bom.length);
+  if (scanner.startsWith(BOM)) scanner.skip(BOM.length);
   dataState(scanner, emit);
 }
 
@@ -100,7 +99,7 @@ function tagNameState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
 
   if (
     tagToken.type === TokenType.START_TAG &&
-    rawDataTagNames.has(tagToken.name)
+    (rawDataTagNames.has(tagToken.name) || rcDataElements.has(tagToken.name))
   ) {
     rawDataState(scanner, emit, tagToken);
   }
@@ -138,7 +137,7 @@ function beforeAttrNameState(
     // end tag attributes are dropped
     if (
       tagToken.type === TokenType.START_TAG &&
-      !tagToken.attrs.some((attr) => attr[0] === attrName)
+      !tagToken.attrs.some(attr => attr[0] === attrName)
     ) {
       tagToken.attrs.push(attr);
     }

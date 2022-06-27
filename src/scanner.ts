@@ -1,4 +1,5 @@
 /**
+ * used to read input stream in chunks/characters
  * inspired by https://github.com/zzyyxxww/tokenz
  */
 export default class Scanner {
