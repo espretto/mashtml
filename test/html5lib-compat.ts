@@ -1,10 +1,9 @@
-import { tokenize } from "../src/tokenizer";
 import { Token, TokenType } from "../src/token";
 
 /**
  * used to transform a mashtml token to an html5lib-tests token
  */
-function toTestToken(token: Token): TestToken {
+export function toTestToken(token: Token): TestToken {
   if (typeof token === "string") {
     return ["Character", token];
   }
@@ -23,15 +22,6 @@ function toTestToken(token: Token): TestToken {
     case TokenType.CDATA:
       return ["Comment", token.data];
   }
-}
-
-/**
- * used to collect all emitted tokens
- */
-export function tokenizeToArray(input: string) {
-  const tokens: TestToken[] = [];
-  tokenize(input, token => tokens.push(toTestToken(token)));
-  return tokens;
 }
 
 /**

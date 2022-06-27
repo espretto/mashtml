@@ -46,10 +46,16 @@ const rawDataTagNames = new Set([
 
 export type Emitter = (token: Token) => void;
 
-export function tokenize(input: string, emit: Emitter) {
+export function tokemit(input: string, emit: Emitter) {
   const scanner = new Scanner(cleanInputStream(input));
   if (scanner.startsWith(BOM)) scanner.skip(BOM.length);
   dataState(scanner, emit);
+}
+
+export function tokenize(input: string) {
+  const tokens: Token[] = [];
+  tokemit(input, Array.prototype.push.bind(tokens));
+  return tokens;
 }
 
 function dataState(scanner: Scanner, emit: Emitter) {
