@@ -2,7 +2,8 @@
   "name": "mashtml",
   "version": "1.0.0",
   "description": "html tokenizer",
-  "main": "dist/tokenizer.js",
+  "author": "espretto",
+  "license": "MIT",
   "keywords": [
     "html",
     "token",
@@ -10,8 +11,27 @@
     "parse",
     "sanitize"
   ],
-  "author": "espretto",
-  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=14.16",
+    "npm": ">=6.14.12"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/tokenizer.d.ts",
+        "default": "./dist/tokenizer.js"
+      }
+    }
+  },
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf ./dist",
+    "build": "npm run clean && tsc --build",
+    "lint:types": "tsc --noEmit"
+  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.10.4",
     "@babel/core": "^7.10.4",
@@ -42,17 +62,5 @@
         "./test/html5lib-transformer.js"
       ]
     }
-  },
-  "engines": {
-    "node": ">=10.16.0",
-    "npm": ">=6.9.0"
-  },
-  "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "clean": "rm -rf ./dist",
-    "build": "npm run clean && tsc --build",
-    "lint:types": "tsc --noEmit"
-  },
-  "dependencies": {}
+  }
 }

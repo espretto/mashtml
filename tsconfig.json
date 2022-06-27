@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "strict": false,
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2015",
+    "module": "node16",
+    "moduleResolution": "node16",
     "declaration": true,
     "outDir": "dist",
     "esModuleInterop": true,

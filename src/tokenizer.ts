@@ -8,8 +8,8 @@ import {
   cleanRCDATA,
   cleanTagName,
   cleanText,
-} from "./cleaning";
-import Scanner from "./scanner";
+} from "./cleaning.js";
+import Scanner from "./scanner.js";
 import {
   createDataToken,
   createEndTag,
@@ -17,7 +17,7 @@ import {
   TagToken,
   Token,
   TokenType,
-} from "./token";
+} from "./token.js";
 
 const isLetter = RegExp.prototype.test.bind(/[a-zA-Z]/);
 
@@ -143,7 +143,7 @@ function beforeAttrNameState(
     // end tag attributes are dropped
     if (
       tagToken.type === TokenType.START_TAG &&
-      !tagToken.attrs.some(attr => attr[0] === attrName)
+      !tagToken.attrs.some((attr) => attr[0] === attrName)
     ) {
       tagToken.attrs.push(attr);
     }
