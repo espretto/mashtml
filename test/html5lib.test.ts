@@ -1,4 +1,4 @@
-import { tokenize } from "../src/tokenizer";
+import { tokenArray } from "../src/tokenizer";
 import { coalesceAdjCharTokens, toTestToken } from "./html5lib-compat";
 import { reNamedCharRef } from "./namedCharRefs";
 
@@ -90,7 +90,7 @@ function runTest(test: TestCase, state: InitialState) {
   it(description, () => {
     // prepend state trigger
     const preparedInput = input ? triggerTag + input : input;
-    const actual = tokenize(preparedInput).map(toTestToken);
+    const actual = tokenArray(preparedInput).map(toTestToken);
 
     if (triggerTag) {
       // remove state trigger
