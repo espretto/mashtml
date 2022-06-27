@@ -28,7 +28,7 @@ function toTestToken(token: Token): TestToken {
 /**
  * used to collect all emitted tokens
  */
-export function collectTokens(input: string) {
+export function tokenizeToArray(input: string) {
   const tokens: TestToken[] = [];
   tokenize(input, token => tokens.push(toTestToken(token)));
   return tokens;
@@ -37,7 +37,7 @@ export function collectTokens(input: string) {
 /**
  * mutates token array by concatenating adjacent character tokens.
  */
-export function coalesceAdjacentCharacterTokens(tokens: TestToken[]) {
+export function coalesceAdjCharTokens(tokens: TestToken[]) {
   let newIndex = 0;
   let oldIndex = 1;
 

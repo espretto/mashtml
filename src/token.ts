@@ -13,10 +13,10 @@ interface StartTag {
   selfClosing: boolean;
 }
 
-export function createStartTag(): StartTag {
+export function createStartTag(name: string = ""): StartTag {
   return {
     type: TokenType.START_TAG,
-    name: "",
+    name,
     attrs: [],
     selfClosing: false,
   };

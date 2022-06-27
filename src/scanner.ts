@@ -56,6 +56,7 @@ export default class Scanner {
   }
 
   search(needle: RegExp) {
+    /* istanbul ignore next */
     if (!needle.global) throw new Error("missing global flag on regexp");
     needle.lastIndex = this.index;
     return needle.exec(this.input);

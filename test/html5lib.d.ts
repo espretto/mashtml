@@ -1,4 +1,5 @@
 /**
+ * type declarations for contents of html5lib-tests files
  * @see https://github.com/html5lib/html5lib-tests/blob/master/tokenizer/README.md
  */
 

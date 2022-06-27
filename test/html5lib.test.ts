@@ -1,5 +1,5 @@
 import { reNamedCharRef } from "./namedCharRefs";
-import { collectTokens, coalesceAdjacentCharacterTokens } from "./compat";
+import { tokenizeToArray, coalesceAdjCharTokens } from "./html5lib-compat";
 
 /**
  * used to transition to the test's initial tokenizer state
@@ -88,7 +88,7 @@ function runTest(test: TestCase, state: InitialState) {
 
   it(description, () => {
     // prepend state trigger
-    const actual = collectTokens(input ? triggerTag + input : input);
+    const actual = tokenizeToArray(input ? triggerTag + input : input);
 
     if (triggerTag) {
       // remove state trigger
@@ -100,7 +100,7 @@ function runTest(test: TestCase, state: InitialState) {
       }
     }
 
-    coalesceAdjacentCharacterTokens(actual);
+    coalesceAdjCharTokens(actual);
 
     switch (expected[0]?.[0]) {
       case "Comment":

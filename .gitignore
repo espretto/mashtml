@@ -1,3 +1,11 @@
+# compiled output
+/dist
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Dependency directories
+node_modules/
+
+# System Files
 .DS_Store
-node_modules
-dist
