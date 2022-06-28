@@ -16,6 +16,8 @@
     "node": ">=14.16",
     "npm": ">=6.14.12"
   },
+  "main": "./dist/tokenizer.js",
+  "types": "./dist/tokenizer.d.ts",
   "exports": {
     ".": {
       "import": {
