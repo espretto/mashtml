@@ -31,6 +31,8 @@ const endOfAttrValue = /[> \t\n\f]/g;
 
 const endOfComment = /--?!?$|--!?>/g;
 
+const endOfFile = /$/g;
+
 const rcDataElements = new Set(["title", "textarea"]);
 
 const rawDataTagNames = new Set([
@@ -168,7 +170,7 @@ function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
   const clean = rcDataElements.has(tagToken.name) ? cleanRCDATA : cleanRawText;
 
   if (tagToken.name === "plaintext") {
-    const data = scanner.readUntil(/$/g);
+    const data = scanner.readUntil(endOfFile);
     if (data) emit(clean(data));
   } else {
     const pattern = "</" + tagToken.name + endOfTagName.source;
@@ -192,7 +194,7 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
       emit(createDataToken(TokenType.COMMENT, ""));
       scanner.skip(1);
     } else {
-      const match = scanner.search(endOfComment) || scanner.search(/$/g);
+      const match = scanner.search(endOfComment) || scanner.search(endOfFile);
       const data = cleanComment(scanner.readUntil(match!.index));
       emit(createDataToken(TokenType.COMMENT, data));
       scanner.skip(match![0].length);
