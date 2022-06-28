@@ -29,7 +29,7 @@ const endOfAttrName = /[=\/> \t\n\f]/g;
 
 const endOfAttrValue = /[> \t\n\f]/g;
 
-const endOfComment = /--!?>/g;
+const endOfComment = /--?!?$|--!?>/g;
 
 const rcDataElements = new Set(["title", "textarea"]);
 
@@ -187,10 +187,16 @@ function bogusCommentState(scanner: Scanner, emit: Emitter) {
 function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
   if (scanner.startsWith("--")) {
     scanner.skip(2);
-    const data = cleanComment(scanner.readUntil(endOfComment));
-    emit(createDataToken(TokenType.COMMENT, data));
-    scanner.skipUntil(">");
-    scanner.skip(1);
+
+    if (scanner.peek() === ">") {
+      emit(createDataToken(TokenType.COMMENT, ""));
+      scanner.skip(1);
+    } else {
+      const match = scanner.search(endOfComment) || scanner.search(/$/g);
+      const data = cleanComment(scanner.readUntil(match!.index));
+      emit(createDataToken(TokenType.COMMENT, data));
+      scanner.skip(match![0].length);
+    }
   } else if (scanner.startsWith("[CDATA[")) {
     scanner.skip(7);
     const data = scanner.readUntil("]]>");
