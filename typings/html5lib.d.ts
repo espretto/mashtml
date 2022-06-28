@@ -28,3 +28,7 @@ interface TestCase {
   lastStartTag?: string;
   errors?: string[];
 }
+
+declare module "*.test" {
+  export const tests: TestCase[];
+}

@@ -1,4 +1,4 @@
-import { Token, TokenType } from "../src/token";
+import { Token, TokenType } from "../src/token.js";
 
 /**
  * used to transform a mashtml token to an html5lib-tests token

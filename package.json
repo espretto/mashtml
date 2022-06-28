@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:coverage": "jest --coverage",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc --build",
@@ -53,14 +53,16 @@
     ]
   },
   "jest": {
-    "collectCoverageFrom": ["./src/**"],
+    "collectCoverageFrom": [
+      "./src/**"
+    ],
+    "extensionsToTreatAsEsm": [".ts", ".test"],
+    "moduleNameMapper": {
+      "^(.+)\\.js$": "$1"
+    },
     "transform": {
-      "\\.[jt]sx?$": [
-        "babel-jest"
-      ],
-      "\\.test$": [
-        "./test/html5lib-transformer.js"
-      ]
+      "\\.[jt]sx?$": "babel-jest",
+      "\\.test$": "./test/html5lib-transformer.js"
     }
   }
 }
