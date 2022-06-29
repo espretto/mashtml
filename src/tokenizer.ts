@@ -203,9 +203,8 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
       scanner.skip(match![0].length);
     }
   } else if (scanner.startsWith("[CDATA[")) {
-    scanner.skip(7);
-    const data = scanner.readUntil("]]>");
-    emit(createDataToken(TokenType.CDATA, data));
+    const data = scanner.readUntil("]]>") + "]]";
+    emit(createDataToken(TokenType.COMMENT, data));
     scanner.skip(3);
   } else if (scanner.startsWith("doctype", true)) {
     scanner.skip(7);

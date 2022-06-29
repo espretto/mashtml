@@ -37,15 +37,6 @@ function involvesNamedCharacterReferences({ input }: TestCase) {
   return reNamedCharRef.test(input);
 }
 
-/**
- * used to detect test cases involving CDATA in the HTML namespace
- */
-function involvesCDATABogusComment({ output }: TestCase) {
-  return output.some(
-    ([type, data]) => type === "Comment" && data.startsWith("[CDATA[")
-  );
-}
-
 import contentModelFlags from "./html5lib-tests/tokenizer/contentModelFlags.test";
 import domjs from "./html5lib-tests/tokenizer/domjs.test";
 import entities from "./html5lib-tests/tokenizer/entities.test";
@@ -87,8 +78,7 @@ Object.entries({
 
       if (
         involvesEscapedScriptData(test) ||
-        involvesNamedCharacterReferences(test) ||
-        involvesCDATABogusComment(test)
+        involvesNamedCharacterReferences(test)
       ) {
         return it.skip(test.description, () => {});
       }
@@ -115,9 +105,9 @@ function runTest(test: TestCase, state: InitialState) {
       // remove state trigger
       const triggerToken = actual.shift();
 
-      // re-emit CDATA contents as character tokens as is expected by the tests
+      // re-emit cdata bogus comments as characters
       if (triggerToken && state === "CDATA section state") {
-        actual.unshift(["Character", triggerToken[1]]);
+        actual.unshift(["Character", triggerToken[1].slice(7, -2)]);
       }
     }
 

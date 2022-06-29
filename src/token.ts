@@ -1,7 +1,6 @@
 export enum TokenType {
   START_TAG,
   END_TAG,
-  CDATA,
   DOCTYPE,
   COMMENT,
 }
@@ -37,7 +36,7 @@ export function createEndTag(name: string = ""): EndTag {
 }
 
 interface DataToken {
-  type: TokenType.DOCTYPE | TokenType.COMMENT | TokenType.CDATA;
+  type: TokenType.DOCTYPE | TokenType.COMMENT;
   data: string;
 }
 
