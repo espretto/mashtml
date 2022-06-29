@@ -37,6 +37,15 @@ function involvesNamedCharacterReferences({ input }: TestCase) {
   return reNamedCharRef.test(input);
 }
 
+/**
+ * used to detect test cases involving CDATA in the HTML namespace
+ */
+function involvesCDATABogusComment({ output }: TestCase) {
+  return output.some(
+    ([type, data]) => type === "Comment" && data.startsWith("[CDATA[")
+  );
+}
+
 import contentModelFlags from "./html5lib-tests/tokenizer/contentModelFlags.test";
 import domjs from "./html5lib-tests/tokenizer/domjs.test";
 import entities from "./html5lib-tests/tokenizer/entities.test";
@@ -72,13 +81,14 @@ Object.entries({
         test.doubleEscaped = false;
         test.input = unescape(test.input);
         test.output
-          .filter(([type]) => type === "Character")
+          .filter(([type]) => type === "Character" || type === "Comment")
           .forEach((token) => (token[1] = unescape(token[1])));
       }
 
       if (
         involvesEscapedScriptData(test) ||
-        involvesNamedCharacterReferences(test)
+        involvesNamedCharacterReferences(test) ||
+        involvesCDATABogusComment(test)
       ) {
         return it.skip(test.description, () => {});
       }
@@ -114,11 +124,8 @@ function runTest(test: TestCase, state: InitialState) {
     coalesceAdjCharTokens(actual);
 
     switch (expected[0]?.[0]) {
-      case "Comment":
       case "DOCTYPE":
-        // ease up test criteria for doctypes, comments and CDATA sections.
-        // while they must consume the same amount of characters, do not expect
-        // them to have been processed any further
+        // ease up test criteria for doctypes
         expect(actual).toHaveLength(expected.length);
         expect(actual[0][0]).toEqual(expected[0][0]);
         break;

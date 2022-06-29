@@ -29,7 +29,7 @@ const endOfAttrName = /[=\/> \t\n\f]/g;
 
 const endOfAttrValue = /[> \t\n\f]/g;
 
-const endOfComment = /--?!?$|--!?>/g;
+const endOfComment = /--?$|--!?(?:>|$)/g;
 
 const endOfFile = /$/g;
 
@@ -190,12 +190,15 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
   if (scanner.startsWith("--")) {
     scanner.skip(2);
 
-    if (scanner.peek() === ">") {
+    if (scanner.startsWith(">")) {
       emit(createDataToken(TokenType.COMMENT, ""));
       scanner.skip(1);
+    } else if (scanner.startsWith("->")) {
+      emit(createDataToken(TokenType.COMMENT, ""));
+      scanner.skip(2);
     } else {
       const match = scanner.search(endOfComment) || scanner.search(endOfFile);
-      const data = cleanComment(scanner.readUntil(match!.index));
+      let data = cleanComment(scanner.readUntil(match!.index));
       emit(createDataToken(TokenType.COMMENT, data));
       scanner.skip(match![0].length);
     }
