@@ -45,14 +45,9 @@ export default class Scanner {
     this.index += n;
   }
 
-  skipUntil(terminator: string | RegExp) {
-    if (typeof terminator === "string") {
-      const index = this.input.indexOf(terminator, this.index);
-      this.index = index > -1 ? index : this.input.length;
-    } else {
-      const match = this.search(terminator);
-      this.index = match ? match.index : this.input.length;
-    }
+  skipUntil(terminator: RegExp) {
+    const match = this.search(terminator);
+    this.index = match ? match.index : this.input.length;
   }
 
   search(needle: RegExp) {

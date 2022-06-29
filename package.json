@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc --build",
     "lint:types": "tsc --noEmit"
