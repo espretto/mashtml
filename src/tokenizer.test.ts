@@ -1,5 +1,5 @@
-import { tokenArray } from "../src/tokenizer.js";
-import { createStartTag } from "../src/token.js";
+import { tokenArray } from "./tokenizer.js";
+import { createStartTag } from "./token.js";
 
 describe("tokenizer", () => {
   it("should strip the BOM if there is one", () => {
