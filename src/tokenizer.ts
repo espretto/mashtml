@@ -14,6 +14,7 @@ import {
   createDataToken,
   createEndTag,
   createStartTag,
+  StartTag,
   TagToken,
   Token,
   TokenType,
@@ -46,12 +47,16 @@ const rawDataTagNames = new Set([
   "xmp",
 ]);
 
+/** used to ignore attributes w/o flow control changes */
+let ignoredAttrs: StartTag["attrs"] = {};
+
 export type Emitter = (token: Token) => void;
 
 export function tokenStream(input: string, emit: Emitter) {
   const scanner = new Scanner(cleanInputStream(input));
   if (scanner.startsWith(BOM)) scanner.skip(BOM.length);
   dataState(scanner, emit);
+  ignoredAttrs = {};
 }
 
 export function tokenArray(input: string) {
@@ -140,15 +145,14 @@ function beforeAttrNameState(
 
     // retrieve current attribute name, first character (current `chr`) may be [=]
     const attrName = cleanAttrName(chr + scanner.readUntil(endOfAttrName));
-    const attr = [attrName, ""];
 
-    // end tag attributes are dropped
-    if (
-      tagToken.type === TokenType.START_TAG &&
-      !tagToken.attrs.some((attr) => attr[0] === attrName)
-    ) {
-      tagToken.attrs.push(attr);
-    }
+    // ignore duplicate start tag attributes and all end tag attributes
+    const attrs =
+      tagToken.type === TokenType.END_TAG || attrName in tagToken.attrs
+        ? ignoredAttrs
+        : tagToken.attrs;
+
+    attrs[attrName] = null;
 
     scanner.skipUntil(endOfWhitespace);
     if (scanner.peek() !== "=") continue;
@@ -157,11 +161,11 @@ function beforeAttrNameState(
 
     chr = scanner.read();
     if (chr === "'" || chr === '"') {
-      attr[1] = cleanAttrValue(scanner.readUntil(chr));
+      attrs[attrName] = cleanAttrValue(scanner.readUntil(chr));
       scanner.skip(1);
     } else if (chr) {
       scanner.unread();
-      attr[1] = cleanAttrValue(scanner.readUntil(endOfAttrValue));
+      attrs[attrName] = cleanAttrValue(scanner.readUntil(endOfAttrValue));
     }
   }
 }

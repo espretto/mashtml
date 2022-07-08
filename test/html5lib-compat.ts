@@ -9,17 +9,15 @@ export function toTestToken(token: Token): TestToken {
   }
   switch (token.type) {
     case TokenType.START_TAG: {
-      const attrs = Object.fromEntries(token.attrs);
       return token.selfClosing
-        ? ["StartTag", token.name, attrs, true]
-        : ["StartTag", token.name, attrs];
+        ? ["StartTag", token.name, token.attrs, true]
+        : ["StartTag", token.name, token.attrs];
     }
     case TokenType.END_TAG:
       return ["EndTag", token.name];
     case TokenType.DOCTYPE:
       return ["DOCTYPE", token.data, null, null, true];
     case TokenType.COMMENT:
-    case TokenType.CDATA:
       return ["Comment", token.data];
   }
 }

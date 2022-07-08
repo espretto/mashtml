@@ -5,10 +5,10 @@ export enum TokenType {
   COMMENT,
 }
 
-interface StartTag {
+export interface StartTag {
   type: TokenType.START_TAG;
   name: string;
-  attrs: string[][];
+  attrs: { [attrName: string]: boolean | number | string | null };
   selfClosing: boolean;
 }
 
@@ -16,12 +16,12 @@ export function createStartTag(name: string = ""): StartTag {
   return {
     type: TokenType.START_TAG,
     name,
-    attrs: [],
+    attrs: {},
     selfClosing: false,
   };
 }
 
-interface EndTag {
+export interface EndTag {
   type: TokenType.END_TAG;
   name: string;
   selfClosing: false;
@@ -35,7 +35,7 @@ export function createEndTag(name: string = ""): EndTag {
   };
 }
 
-interface DataToken {
+export interface DataToken {
   type: TokenType.DOCTYPE | TokenType.COMMENT;
   data: string;
 }
