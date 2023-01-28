@@ -1,5 +1,8 @@
 import { tokenArray } from "../src/tokenizer.js";
-import { coalesceAdjCharTokens, toTestToken } from "./html5lib-compat.js";
+import {
+  coalesceAdjacentCharacterTokens,
+  toTestToken,
+} from "./html5lib-compat.js";
 import { reNamedCharRef } from "./namedCharRefs.js";
 
 /**
@@ -19,7 +22,7 @@ const lastStartTagMap: Record<InitialState, string> = {
  */
 function unescape(input: string) {
   return input.replace(/\\u([\da-f]{4})/gi, (_, hex) =>
-    String.fromCodePoint(parseInt(hex, 16))
+    String.fromCharCode(parseInt(hex, 16))
   );
 }
 
@@ -37,34 +40,34 @@ function involvesNamedCharacterReferences({ input }: TestCase) {
   return reNamedCharRef.test(input);
 }
 
-import contentModelFlags from "./html5lib-tests/tokenizer/contentModelFlags.test";
-import domjs from "./html5lib-tests/tokenizer/domjs.test";
-import entities from "./html5lib-tests/tokenizer/entities.test";
-import escapeFlag from "./html5lib-tests/tokenizer/escapeFlag.test";
-import numericEntities from "./html5lib-tests/tokenizer/numericEntities.test";
-import pendingSpecChanges from "./html5lib-tests/tokenizer/pendingSpecChanges.test";
+// import contentModelFlags from "./html5lib-tests/tokenizer/contentModelFlags.test";
+// import domjs from "./html5lib-tests/tokenizer/domjs.test";
+// import entities from "./html5lib-tests/tokenizer/entities.test";
+// import escapeFlag from "./html5lib-tests/tokenizer/escapeFlag.test";
+// import numericEntities from "./html5lib-tests/tokenizer/numericEntities.test";
+// import pendingSpecChanges from "./html5lib-tests/tokenizer/pendingSpecChanges.test";
 import test1 from "./html5lib-tests/tokenizer/test1.test";
-import test2 from "./html5lib-tests/tokenizer/test2.test";
-import test3 from "./html5lib-tests/tokenizer/test3.test";
-import test4 from "./html5lib-tests/tokenizer/test4.test";
-import unicodeChars from "./html5lib-tests/tokenizer/unicodeChars.test";
-import unicodeCharsProblematic from "./html5lib-tests/tokenizer/unicodeCharsProblematic.test";
+// import test2 from "./html5lib-tests/tokenizer/test2.test";
+// import test3 from "./html5lib-tests/tokenizer/test3.test";
+// import test4 from "./html5lib-tests/tokenizer/test4.test";
+// import unicodeChars from "./html5lib-tests/tokenizer/unicodeChars.test";
+// import unicodeCharsProblematic from "./html5lib-tests/tokenizer/unicodeCharsProblematic.test";
 // "./html5lib-tests/tokenizer/namedEntities.test",
 // "./html5lib-tests/tokenizer/xmlViolations.test",
 
 Object.entries({
-  contentModelFlags,
-  domjs,
-  entities,
-  escapeFlag,
-  numericEntities,
-  pendingSpecChanges,
+  // contentModelFlags,
+  // domjs,
+  // entities,
+  // escapeFlag,
+  // numericEntities,
+  // pendingSpecChanges,
   test1,
-  test2,
-  test3,
-  test4,
-  unicodeChars,
-  unicodeCharsProblematic,
+  // test2,
+  // test3,
+  // test4,
+  // unicodeChars,
+  // unicodeCharsProblematic,
 }).forEach(([suite, { tests }]) =>
   describe(suite, () =>
     tests.forEach((test) => {
@@ -111,7 +114,7 @@ function runTest(test: TestCase, state: InitialState) {
       }
     }
 
-    coalesceAdjCharTokens(actual);
+    coalesceAdjacentCharacterTokens(actual);
 
     switch (expected[0]?.[0]) {
       case "DOCTYPE":

@@ -36,13 +36,16 @@ export function tokenTree(html: string) {
       parent.children.push(element);
       if (!voidElements.has(element.tagName)) parents.push(element);
     } else if (token.type === TokenType.END_TAG) {
-      const i = findLastIndex(parents, (p) => p.tagName === token.name);
+      const i = findLastIndex(
+        parents,
+        (p) => p.type === "element" && p.tagName === token.name
+      );
       if (i < 0) emit(createStartTag(token.name));
       else parents.length = i;
     } else if (token.type === TokenType.COMMENT) {
       parent.children.push({ type: "comment", value: token.data });
     } else if (token.type === TokenType.DOCTYPE) {
-      if (parent !== root) throw new Error("cannot nest doctype tags");
+      if (parent !== root) throw new Error("doctypes must be toplevel tags");
       parent.children.push({
         type: "doctype",
         name: "",

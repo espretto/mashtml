@@ -25,7 +25,7 @@ export function toTestToken(token: Token): TestToken {
 /**
  * mutates token array by concatenating adjacent character tokens.
  */
-export function coalesceAdjCharTokens(tokens: TestToken[]) {
+export function coalesceAdjacentCharacterTokens(tokens: TestToken[]) {
   let newIndex = 0;
   let oldIndex = 1;
 

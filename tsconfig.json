@@ -6,12 +6,11 @@
     "moduleResolution": "node16",
     "declaration": true,
     "outDir": "dist",
-    "typeRoots": ["typings", "node_modules/@types"],
     "esModuleInterop": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
   },
-  "include": ["src"],
+  "include": ["src", "test"],
   "exclude": ["node_modules"]
 }

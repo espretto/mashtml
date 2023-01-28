@@ -109,6 +109,7 @@ This is a specialized tokenizer. It is compliant with the HTML5 specification to
 - [x] 13.2.5.80 Numeric character reference end state
 
 Spec compliance is **not intended to be complete** for the following reasons:
+
 - Trust is lost when non-empty script tags are encountered, regardless of whether or not their contents are escaped.
 - The tokenizer is ignorant of [document namespaces](https://infra.spec.whatwg.org/#html-namespace) and will treat CDATA sections as bogus comments.
 - Doctype details are not parsed but only preserved in their raw version

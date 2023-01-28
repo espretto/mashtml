@@ -152,7 +152,7 @@ function beforeAttrNameState(
         ? ignoredAttrs
         : tagToken.attrs;
 
-    attrs[attrName] = null;
+    attrs[attrName] = "";
 
     scanner.skipUntil(endOfWhitespace);
     if (scanner.peek() !== "=") continue;
@@ -202,7 +202,7 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
       scanner.skip(2);
     } else {
       const match = scanner.search(endOfComment) || scanner.search(endOfFile);
-      let data = cleanComment(scanner.readUntil(match!.index));
+      const data = cleanComment(scanner.readUntil(match!.index));
       emit(createDataToken(TokenType.COMMENT, data));
       scanner.skip(match![0].length);
     }
