@@ -36,13 +36,11 @@ const endOfFile = /$/g;
 
 const rcDataElements = new Set(["title", "textarea"]);
 
-const rawDataElements = new Set([
+const rawTextElements = new Set([
   "iframe",
   "noembed",
   "noframes",
   "noscript",
-  "plaintext",
-  "script",
   "style",
   "xmp",
 ]);
@@ -81,11 +79,15 @@ function dataState(scanner: Scanner, emit: Emitter) {
       const tagToken = createStartTag(tagName);
       beforeAttrNameState(scanner, emit, tagToken);
 
-      if (
-        rcDataElements.has(tagToken.name) ||
-        rawDataElements.has(tagToken.name)
-      ) {
-        rawDataState(scanner, emit, tagToken);
+      if (tagName === "plaintext") {
+        const data = scanner.readUntil(endOfFile);
+        if (data) emit(cleanRawText(data));
+      } else if (tagName === "script") {
+        scriptDataState(scanner, emit, tagToken);
+      } else if (rcDataElements.has(tagName)) {
+        rawDataState(scanner, emit, tagToken, cleanRCDATA);
+      } else if (rawTextElements.has(tagName)) {
+        rawDataState(scanner, emit, tagToken, cleanRawText);
       }
     } else if (chr === "/") {
       const solidus = chr;
