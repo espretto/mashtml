@@ -36,7 +36,7 @@ const endOfFile = /$/g;
 
 const rcDataElements = new Set(["title", "textarea"]);
 
-const rawDataTagNames = new Set([
+const rawDataElements = new Set([
   "iframe",
   "noembed",
   "noframes",
@@ -77,14 +77,24 @@ function dataState(scanner: Scanner, emit: Emitter) {
 
     if (isLetter(chr)) {
       scanner.unread();
-      tagNameState(scanner, emit, createStartTag());
+      const tagName = cleanTagName(scanner.readUntil(endOfTagName));
+      const tagToken = createStartTag(tagName);
+      beforeAttrNameState(scanner, emit, tagToken);
+
+      if (
+        rcDataElements.has(tagToken.name) ||
+        rawDataElements.has(tagToken.name)
+      ) {
+        rawDataState(scanner, emit, tagToken);
+      }
     } else if (chr === "/") {
       const solidus = chr;
       chr = scanner.read();
 
       if (isLetter(chr)) {
         scanner.unread();
-        tagNameState(scanner, emit, createEndTag());
+        const tagName = cleanTagName(scanner.readUntil(endOfTagName));
+        beforeAttrNameState(scanner, emit, createEndTag(tagName));
       } else if (chr === ">") {
         // dropping invalid sequence </>
       } else if (chr) {
@@ -105,19 +115,6 @@ function dataState(scanner: Scanner, emit: Emitter) {
   }
 }
 
-function tagNameState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
-  tagToken.name = cleanTagName(scanner.readUntil(endOfTagName));
-
-  beforeAttrNameState(scanner, emit, tagToken);
-
-  if (
-    tagToken.type === TokenType.START_TAG &&
-    (rawDataTagNames.has(tagToken.name) || rcDataElements.has(tagToken.name))
-  ) {
-    rawDataState(scanner, emit, tagToken);
-  }
-}
-
 function beforeAttrNameState(
   scanner: Scanner,
   emit: Emitter,
@@ -128,19 +125,12 @@ function beforeAttrNameState(
     let chr = scanner.read();
 
     if (chr === ">") {
-      emit(tagToken);
-      return;
+      return emit(tagToken);
     } else if (chr === "/") {
-      chr = scanner.read();
-
-      if (chr === ">") {
-        tagToken.selfClosing = true;
-        emit(tagToken);
-        return;
-      } else {
-        scanner.unread();
-        continue;
-      }
+      if (scanner.peek() !== ">") continue;
+      scanner.skip(1);
+      tagToken.selfClosing = true;
+      return emit(tagToken);
     }
 
     // retrieve current attribute name, first character (current `chr`) may be [=]
