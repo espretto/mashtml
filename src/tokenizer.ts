@@ -71,10 +71,9 @@ function dataState(scanner: Scanner, emit: Emitter) {
     const chevron = scanner.read();
     if (!chevron) return;
 
-    let chr = scanner.read();
+    let chr = scanner.peek();
 
     if (isLetter(chr)) {
-      scanner.unread();
       const tagName = cleanTagName(scanner.readUntil(endOfTagName));
       const tagToken = createStartTag(tagName);
       beforeAttrNameState(scanner, emit, tagToken);
@@ -91,27 +90,25 @@ function dataState(scanner: Scanner, emit: Emitter) {
       }
     } else if (chr === "/") {
       const solidus = chr;
-      chr = scanner.read();
+      scanner.skip(1);
+      chr = scanner.peek();
 
       if (isLetter(chr)) {
-        scanner.unread();
         const tagName = cleanTagName(scanner.readUntil(endOfTagName));
         beforeAttrNameState(scanner, emit, createEndTag(tagName));
       } else if (chr === ">") {
-        // dropping invalid sequence </>
+        scanner.skip(1); // skipping invalid sequence </>
       } else if (chr) {
-        scanner.unread();
         bogusCommentState(scanner, emit);
       } else {
         emit(chevron + solidus);
       }
     } else if (chr === "!") {
+      scanner.skip(1);
       markupDeclarationOpenState(scanner, emit);
     } else if (chr === "?") {
-      scanner.unread();
       bogusCommentState(scanner, emit);
     } else {
-      scanner.unread();
       emit(chevron);
     }
   }
@@ -151,12 +148,12 @@ function beforeAttrNameState(
     scanner.skip(1);
     scanner.skipUntil(endOfWhitespace);
 
-    chr = scanner.read();
+    chr = scanner.peek();
     if (chr === "'" || chr === '"') {
+      scanner.skip(1);
       attrs[attrName] = cleanAttrValue(scanner.readUntil(chr));
       scanner.skip(1);
     } else if (chr) {
-      scanner.unread();
       attrs[attrName] = cleanAttrValue(scanner.readUntil(endOfAttrValue));
     }
   }

@@ -19,10 +19,6 @@ export default class Scanner {
     return this.input.charAt(this.index++);
   }
 
-  unread() {
-    this.index -= 1;
-  }
-
   readUntil(terminator: number | string | RegExp): string {
     switch (typeof terminator) {
       case "number": {
