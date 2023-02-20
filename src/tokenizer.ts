@@ -75,18 +75,17 @@ function dataState(scanner: Scanner, emit: Emitter) {
 
     if (isLetter(chr)) {
       const tagName = cleanTagName(scanner.readUntil(endOfTagName));
-      const tagToken = createStartTag(tagName);
-      beforeAttrNameState(scanner, emit, tagToken);
+      beforeAttrNameState(scanner, emit, createStartTag(tagName));
 
       if (tagName === "plaintext") {
         const data = scanner.readUntil(endOfFile);
         if (data) emit(cleanRawText(data));
       } else if (tagName === "script") {
-        scriptDataState(scanner, emit, tagToken);
+        scriptDataState(scanner, emit);
       } else if (rcDataElements.has(tagName)) {
-        rawDataState(scanner, emit, tagToken, cleanRCDATA);
+        rawDataState(scanner, emit, tagName, cleanRCDATA);
       } else if (rawTextElements.has(tagName)) {
-        rawDataState(scanner, emit, tagToken, cleanRawText);
+        rawDataState(scanner, emit, tagName, cleanRawText);
       }
     } else if (chr === "/") {
       const solidus = chr;
@@ -159,8 +158,21 @@ function beforeAttrNameState(
   }
 }
 
-function rawDataState(scanner: Scanner, emit: Emitter, tagToken: TagToken) {
-  const clean = rcDataElements.has(tagToken.name) ? cleanRCDATA : cleanRawText;
+function rawDataState(
+  scanner: Scanner,
+  emit: Emitter,
+  tagName: string,
+  clean: (input: string) => string
+) {
+  const pattern = `(</${tagName})${endOfTagName.source}`;
+  const appropriateEndTag = new RegExp(pattern, "gi");
+  const match = scanner.search(appropriateEndTag);
+  if (!match) return emit(clean(scanner.readUntil(endOfFile)));
+  const data = scanner.readUntil(match.index);
+  if (data) emit(clean(data));
+  scanner.skip(match[1].length);
+  beforeAttrNameState(scanner, emit, createEndTag(tagName));
+}
 
   if (tagToken.name === "plaintext") {
     const data = scanner.readUntil(endOfFile);
