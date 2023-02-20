@@ -184,26 +184,26 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     scanner.skip(2);
 
     if (scanner.startsWith(">")) {
-      emit(createDataToken(TokenType.COMMENT, ""));
       scanner.skip(1);
-    } else if (scanner.startsWith("->")) {
       emit(createDataToken(TokenType.COMMENT, ""));
+    } else if (scanner.startsWith("->")) {
       scanner.skip(2);
+      emit(createDataToken(TokenType.COMMENT, ""));
     } else {
-      const match = scanner.search(endOfComment) || scanner.search(endOfFile);
-      const data = cleanComment(scanner.readUntil(match!.index));
+      const match = scanner.search(endOfComment) || scanner.search(endOfFile)!;
+      const data = cleanComment(scanner.readUntil(match.index));
+      scanner.skip(match[0].length);
       emit(createDataToken(TokenType.COMMENT, data));
-      scanner.skip(match![0].length);
     }
   } else if (scanner.startsWith("[CDATA[")) {
     const data = scanner.readUntil("]]>") + "]]";
-    emit(createDataToken(TokenType.COMMENT, data));
     scanner.skip(3);
+    emit(createDataToken(TokenType.COMMENT, data));
   } else if (scanner.startsWith("doctype", true)) {
     scanner.skip(7);
     const data = scanner.readUntil(">");
-    emit(createDataToken(TokenType.DOCTYPE, data));
     scanner.skip(1);
+    emit(createDataToken(TokenType.DOCTYPE, data));
   } else {
     bogusCommentState(scanner, emit);
   }
