@@ -164,31 +164,79 @@ function rawDataState(
   tagName: string,
   clean: (input: string) => string
 ) {
-  const pattern = `(</${tagName})${endOfTagName.source}`;
+  const pattern = `</${tagName}${endOfTagName.source}`;
   const appropriateEndTag = new RegExp(pattern, "gi");
   const match = scanner.search(appropriateEndTag);
-  if (!match) return emit(clean(scanner.readUntil(endOfFile)));
-  const data = scanner.readUntil(match.index);
-  if (data) emit(clean(data));
-  scanner.skip(match[1].length);
-  beforeAttrNameState(scanner, emit, createEndTag(tagName));
+
+  if (!match) {
+    emit(clean(scanner.readUntil(endOfFile)));
+  } else {
+    const data = scanner.readUntil(match.index);
+    scanner.skip(`</${tagName}`.length);
+    if (data) emit(clean(data));
+    beforeAttrNameState(scanner, emit, createEndTag(tagName));
+  }
 }
 
-  if (tagToken.name === "plaintext") {
-    const data = scanner.readUntil(endOfFile);
-    if (data) emit(clean(data));
+function scriptDataState(scanner: Scanner, emit: Emitter) {
+  const pattern = `</script${endOfTagName.source}|<!-{2,}(?!>)`;
+  const endOfScriptData = new RegExp(pattern, "gi");
+  const match = scanner.search(endOfScriptData);
+
+  if (!match) {
+    emit(cleanRawText(scanner.readUntil(endOfFile)));
+  } else if (match[0].startsWith("</")) {
+    const data = scanner.readUntil(match.index);
+    scanner.skip("</script".length);
+    if (data) emit(cleanRawText(data));
+    beforeAttrNameState(scanner, emit, createEndTag("script"));
   } else {
-    const pattern = "</" + tagToken.name + endOfTagName.source;
-    const data = scanner.readUntil(new RegExp(pattern, "gi"));
-    if (data) emit(clean(data));
-    beforeAttrNameState(scanner, emit, createEndTag(tagToken.name));
+    emit(cleanRawText(scanner.readUntil(endOfScriptData.lastIndex)));
+    scriptDataEscapeState(scanner, emit);
+  }
+}
+
+function scriptDataEscapeState(scanner: Scanner, emit: Emitter) {
+  const pattern = `</?script${endOfTagName.source}|-{2,}>`;
+  const endOfEscapedScriptData = new RegExp(pattern, "gi");
+  const match = scanner.search(endOfEscapedScriptData);
+
+  if (!match) {
+    emit(cleanRawText(scanner.readUntil(endOfFile)));
+  } else if (match[0].startsWith("-")) {
+    emit(cleanRawText(scanner.readUntil(endOfEscapedScriptData.lastIndex)));
+    scriptDataState(scanner, emit); // susceptible to max recursion
+  } else if (match[0].startsWith("</")) {
+    const data = scanner.readUntil(match.index);
+    scanner.skip("</script".length);
+    if (data) emit(cleanRawText(data));
+    beforeAttrNameState(scanner, emit, createEndTag("script"));
+  } else if (match[0].startsWith("<")) {
+    emit(cleanRawText(scanner.readUntil(endOfEscapedScriptData.lastIndex)));
+    scriptDataDoubleEscapeState(scanner, emit);
+  }
+}
+
+function scriptDataDoubleEscapeState(scanner: Scanner, emit: Emitter) {
+  const pattern = `</script${endOfTagName.source}|-{2,}>`;
+  const endOfDblEscapedScriptData = new RegExp(pattern, "gi");
+  const match = scanner.search(endOfDblEscapedScriptData);
+
+  if (!match) {
+    emit(cleanRawText(scanner.readUntil(endOfFile)));
+  } else if (match[0].startsWith("-")) {
+    emit(cleanRawText(scanner.readUntil(endOfDblEscapedScriptData.lastIndex)));
+    scriptDataState(scanner, emit); // susceptible to max recursion
+  } else {
+    emit(cleanRawText(scanner.readUntil(endOfDblEscapedScriptData.lastIndex)));
+    scriptDataEscapeState(scanner, emit); // susceptible to max recursion
   }
 }
 
 function bogusCommentState(scanner: Scanner, emit: Emitter) {
   const data = cleanComment(scanner.readUntil(">"));
-  emit(createDataToken(TokenType.COMMENT, data));
   scanner.skip(1);
+  emit(createDataToken(TokenType.COMMENT, data));
 }
 
 function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {

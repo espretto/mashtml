@@ -27,13 +27,6 @@ function unescape(input: string) {
 }
 
 /**
- * used to detect test cases involving escaped script data
- */
-function involvesEscapedScriptData({ input, initialStates }: TestCase) {
-  return input.includes("<!--") && initialStates?.includes("Script data state");
-}
-
-/**
  * used to detect test cases involving named character references
  */
 function involvesNamedCharacterReferences({ input }: TestCase) {
