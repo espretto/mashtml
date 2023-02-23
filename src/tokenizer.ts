@@ -171,10 +171,7 @@ function rawDataState(
   if (!match) {
     emit(clean(scanner.readUntil(endOfFile)));
   } else {
-    const data = scanner.readUntil(match.index);
-    scanner.skip(`</${tagName}`.length);
-    if (data) emit(clean(data));
-    beforeAttrNameState(scanner, emit, createEndTag(tagName));
+    appropriateEndTagState(scanner, emit, tagName, clean, match.index);
   }
 }
 
@@ -186,32 +183,27 @@ function scriptDataState(scanner: Scanner, emit: Emitter) {
   if (!match) {
     emit(cleanRawText(scanner.readUntil(endOfFile)));
   } else if (match[0].startsWith("</")) {
-    const data = scanner.readUntil(match.index);
-    scanner.skip("</script".length);
-    if (data) emit(cleanRawText(data));
-    beforeAttrNameState(scanner, emit, createEndTag("script"));
+    appropriateEndTagState(scanner, emit, "script", cleanRawText, match.index);
   } else {
     emit(cleanRawText(scanner.readUntil(endOfScriptData.lastIndex)));
-    scriptDataEscapeState(scanner, emit);
+    scriptDataEscaped(scanner, emit);
   }
 }
 
-function scriptDataEscapeState(scanner: Scanner, emit: Emitter) {
+function scriptDataEscaped(scanner: Scanner, emit: Emitter) {
   const pattern = `</?script${endOfTagName.source}|-{2,}>`;
   const endOfEscapedScriptData = new RegExp(pattern, "gi");
   const match = scanner.search(endOfEscapedScriptData);
 
   if (!match) {
     emit(cleanRawText(scanner.readUntil(endOfFile)));
+  } else if (match[0].startsWith("</")) {
+    appropriateEndTagState(scanner, emit, "script", cleanRawText, match.index);
   } else if (match[0].startsWith("-")) {
     emit(cleanRawText(scanner.readUntil(endOfEscapedScriptData.lastIndex)));
     scriptDataState(scanner, emit); // susceptible to max recursion
-  } else if (match[0].startsWith("</")) {
-    const data = scanner.readUntil(match.index);
-    scanner.skip("</script".length);
-    if (data) emit(cleanRawText(data));
-    beforeAttrNameState(scanner, emit, createEndTag("script"));
-  } else if (match[0].startsWith("<")) {
+  } else {
+    // matched opening script tag
     emit(cleanRawText(scanner.readUntil(endOfEscapedScriptData.lastIndex)));
     scriptDataDoubleEscapeState(scanner, emit);
   }
@@ -219,24 +211,40 @@ function scriptDataEscapeState(scanner: Scanner, emit: Emitter) {
 
 function scriptDataDoubleEscapeState(scanner: Scanner, emit: Emitter) {
   const pattern = `</script${endOfTagName.source}|-{2,}>`;
-  const endOfDblEscapedScriptData = new RegExp(pattern, "gi");
-  const match = scanner.search(endOfDblEscapedScriptData);
+  const endOfDoubleEscapedScriptData = new RegExp(pattern, "gi");
+  const match = scanner.search(endOfDoubleEscapedScriptData);
 
   if (!match) {
     emit(cleanRawText(scanner.readUntil(endOfFile)));
-  } else if (match[0].startsWith("-")) {
-    emit(cleanRawText(scanner.readUntil(endOfDblEscapedScriptData.lastIndex)));
-    scriptDataState(scanner, emit); // susceptible to max recursion
   } else {
-    emit(cleanRawText(scanner.readUntil(endOfDblEscapedScriptData.lastIndex)));
-    scriptDataEscapeState(scanner, emit); // susceptible to max recursion
+    const data = scanner.readUntil(endOfDoubleEscapedScriptData.lastIndex);
+    emit(cleanRawText(data));
+
+    if (match[0].startsWith("-")) {
+      scriptDataState(scanner, emit); // susceptible to max recursion
+    } else {
+      scriptDataEscaped(scanner, emit); // susceptible to max recursion
+    }
   }
+}
+
+function appropriateEndTagState(
+  scanner: Scanner,
+  emit: Emitter,
+  tagName: string,
+  clean: (input: string) => string,
+  index: number
+) {
+  const data = scanner.readUntil(index);
+  if (data) emit(clean(data));
+  scanner.skip(`</${tagName}`.length);
+  beforeAttrNameState(scanner, emit, createEndTag(tagName));
 }
 
 function bogusCommentState(scanner: Scanner, emit: Emitter) {
   const data = cleanComment(scanner.readUntil(">"));
-  scanner.skip(1);
   emit(createDataToken(TokenType.COMMENT, data));
+  scanner.skip(1);
 }
 
 function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
@@ -244,21 +252,21 @@ function markupDeclarationOpenState(scanner: Scanner, emit: Emitter) {
     scanner.skip(2);
 
     if (scanner.startsWith(">")) {
+      emit(createDataToken(TokenType.COMMENT, ""));
       scanner.skip(1);
-      emit(createDataToken(TokenType.COMMENT, ""));
     } else if (scanner.startsWith("->")) {
-      scanner.skip(2);
       emit(createDataToken(TokenType.COMMENT, ""));
+      scanner.skip(2);
     } else {
       const match = scanner.search(endOfComment) || scanner.search(endOfFile)!;
       const data = cleanComment(scanner.readUntil(match.index));
-      scanner.skip(match[0].length);
       emit(createDataToken(TokenType.COMMENT, data));
+      scanner.skip(match[0].length);
     }
   } else if (scanner.startsWith("[CDATA[")) {
     const data = scanner.readUntil("]]>") + "]]";
-    scanner.skip(3);
     emit(createDataToken(TokenType.COMMENT, data));
+    scanner.skip(3);
   } else if (scanner.startsWith("doctype", true)) {
     scanner.skip(7);
     const data = scanner.readUntil(">");

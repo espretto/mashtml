@@ -1,6 +1,6 @@
-
 # mashtml
-*mashtml* - sufficiently compliant tokenizer with a small footprint.
+
+_mashtml_ - sufficiently compliant tokenizer with a small footprint.
 
 ## Use cases
 
@@ -44,20 +44,20 @@ This is a specialized tokenizer. It is compliant with the HTML5 specification to
 - [x] 13.2.5.15 Script data less-than sign state
 - [x] 13.2.5.16 Script data end tag open state
 - [x] 13.2.5.17 Script data end tag name state
-- [ ] 13.2.5.18 Script data escape start state
-- [ ] 13.2.5.19 Script data escape start dash state
-- [ ] 13.2.5.20 Script data escaped state
-- [ ] 13.2.5.21 Script data escaped dash state
-- [ ] 13.2.5.22 Script data escaped dash dash state
-- [ ] 13.2.5.23 Script data escaped less-than sign state
-- [ ] 13.2.5.24 Script data escaped end tag open state
-- [ ] 13.2.5.25 Script data escaped end tag name state
-- [ ] 13.2.5.26 Script data double escape start state
-- [ ] 13.2.5.27 Script data double escaped state
-- [ ] 13.2.5.28 Script data double escaped dash state
-- [ ] 13.2.5.29 Script data double escaped dash dash state
-- [ ] 13.2.5.30 Script data double escaped less-than sign state
-- [ ] 13.2.5.31 Script data double escape end state
+- [x] 13.2.5.18 Script data escape start state
+- [x] 13.2.5.19 Script data escape start dash state
+- [x] 13.2.5.20 Script data escaped state
+- [x] 13.2.5.21 Script data escaped dash state
+- [x] 13.2.5.22 Script data escaped dash dash state
+- [x] 13.2.5.23 Script data escaped less-than sign state
+- [x] 13.2.5.24 Script data escaped end tag open state
+- [x] 13.2.5.25 Script data escaped end tag name state
+- [x] 13.2.5.26 Script data double escape start state
+- [x] 13.2.5.27 Script data double escaped state
+- [x] 13.2.5.28 Script data double escaped dash state
+- [x] 13.2.5.29 Script data double escaped dash dash state
+- [x] 13.2.5.30 Script data double escaped less-than sign state
+- [x] 13.2.5.31 Script data double escape end state
 - [x] 13.2.5.32 Before attribute name state
 - [x] 13.2.5.33 Attribute name state
 - [x] 13.2.5.34 After attribute name state
@@ -108,11 +108,10 @@ This is a specialized tokenizer. It is compliant with the HTML5 specification to
 - [x] 13.2.5.79 Decimal character reference state
 - [x] 13.2.5.80 Numeric character reference end state
 
-Spec compliance is **not intended to be complete** for the following reasons:
+Spec compliance is **not intended to be complete**:
 
-- Trust is lost when non-empty script tags are encountered, regardless of whether or not their contents are escaped.
 - The tokenizer is ignorant of [document namespaces](https://infra.spec.whatwg.org/#html-namespace) and will treat CDATA sections as bogus comments.
-- Doctype details are not parsed but only preserved in their raw version
+- Doctype details are not parsed but only preserved in their raw version.
 - Named character references are left in their original form.
 
 ## Tests
