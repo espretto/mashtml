@@ -24,9 +24,9 @@ const isLetter = RegExp.prototype.test.bind(/[a-zA-Z]/);
 
 const endOfWhitespace = /[^ \t\n\f]/g;
 
-const endOfTagName = /[\/> \t\n\f]/g;
+const endOfTagName = /[/> \t\n\f]/g;
 
-const endOfAttrName = /[=\/> \t\n\f]/g;
+const endOfAttrName = /[=/> \t\n\f]/g;
 
 const endOfAttrValue = /[> \t\n\f]/g;
 
